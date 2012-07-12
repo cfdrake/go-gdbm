@@ -106,3 +106,11 @@ func (db * Database) Exists(key string) bool {
     }
     return false
 }
+
+func (db * Database) Fetch() {}
+
+func (db * Database) Delete() {}
+
+func (db * Database) Reorganize() {}
+
+func (db * Database) Sync() {}
