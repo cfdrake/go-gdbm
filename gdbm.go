@@ -26,6 +26,7 @@ import (
 //
 type Database struct {
     dbf C.GDBM_FILE
+    cfg DatabaseCfg
 }
 
 //
@@ -57,6 +58,7 @@ func OpenWithCfg(filename string, cfg DatabaseCfg) (db * Database, err error) {
     cs := C.CString(filename)
     defer C.free(unsafe.Pointer(cs))
 
+    db.cfg = cfg
     db.dbf = C.gdbm_open(cs, C.int(cfg.BlockSize), C.int(m), C.int(cfg.Permissions), nil)
     if db.dbf == nil {
         err = lastError()
@@ -107,14 +109,28 @@ func (db * Database) Exists(key string) bool {
     return false
 }
 
+//
 func (db * Database) Fetch() {}
 
-func (db * Database) Delete() {}
+//
+func (db * Database) Delete(key string) (err error) {
+    kcs := C.CString(key)
+    k := C.mk_datum(kcs)
+    defer C.free(unsafe.Pointer(kcs))
 
+    retv := C.gdbm_delete(db.dbf, k)
+    if retv != 0 && db.cfg.Mode == "r" {
+        err = lastError()
+    }
+    return err
+}
+
+//
 func (db * Database) Reorganize() {
     C.gdbm_reorganize(db.dbf)
 }
 
+//
 func (db * Database) Sync() {
     C.gdbm_sync(db.dbf)
 }
