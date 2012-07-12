@@ -10,7 +10,7 @@ package gdbm
 // #include <stdlib.h>
 // #include <gdbm.h>
 // #include <string.h>
-// inline datum mk_datum(char * s, int sz) {
+// inline datum mk_datum(char * s) {
 //     datum d;
 //     d.dptr = s;
 //     d.dsize = strlen(s);
@@ -70,9 +70,14 @@ func (db * Database) Close() {
 }
 
 //
-func (db * Database) insert(key string, value string, flag C.int) (err error) {
-    k := C.mk_datum(C.CString(key), C.int(3))
-    v := C.mk_datum(C.CString(value), C.int(3))
+func (db * Database) update(key string, value string, flag C.int) (err error) {
+    kcs := C.CString(key)
+    vcs := C.CString(value)
+    k := C.mk_datum(kcs)
+    v := C.mk_datum(vcs)
+    defer C.free(unsafe.Pointer(kcs))
+    defer C.free(unsafe.Pointer(vcs))
+
     retv := C.gdbm_store(db.dbf, k, v, flag)
     if retv != 0 {
         err = lastError()
@@ -82,10 +87,22 @@ func (db * Database) insert(key string, value string, flag C.int) (err error) {
 
 //
 func (db * Database) Insert(key string, value string) (err error) {
-    return db.insert(key, value, C.GDBM_INSERT)
+    return db.update(key, value, C.GDBM_INSERT)
 }
 
 //
 func (db * Database) Replace(key string, value string) (err error) {
-    return db.insert(key, value, C.GDBM_REPLACE)
+    return db.update(key, value, C.GDBM_REPLACE)
+}
+
+func (db * Database) Exists(key string) bool {
+    kcs := C.CString(key)
+    k := C.mk_datum(kcs)
+    defer C.free(unsafe.Pointer(kcs))
+
+    e := C.gdbm_exists(db.dbf, k)
+    if e == 1 {
+        return true
+    }
+    return false
 }
