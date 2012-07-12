@@ -110,7 +110,20 @@ func (db * Database) Exists(key string) bool {
 }
 
 //
-func (db * Database) Fetch() {}
+func (db * Database) Fetch(key string) (value string, err error) {
+    kcs := C.CString(key)
+    k := C.mk_datum(kcs)
+    defer C.free(unsafe.Pointer(kcs))
+
+    vdatum := C.gdbm_fetch(db.dbf, k)
+    if vdatum.dptr == nil {
+        return "", lastError()
+    }
+
+    value = C.GoString(vdatum.dptr)
+    defer C.free(unsafe.Pointer(vdatum.dptr))
+    return value, nil
+}
 
 //
 func (db * Database) Delete(key string) (err error) {
