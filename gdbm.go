@@ -9,19 +9,19 @@ package gdbm
 // #cgo LDFLAGS: -lgdbm
 // #include <stdlib.h>
 // #include <gdbm.h>
+// #include <string.h>
+// inline datum mk_datum(char * s, int sz) {
+//     datum d;
+//     d.dptr = s;
+//     d.dsize = strlen(s);
+//     return d;
+// }
 import "C"
 
 import (
     "errors"
     "unsafe"
 )
-
-var errText = map[int]string{ 0: "",
-}
-
-func lastError() error {
-    return errors.New(C.GoString(C.gdbm_strerror(C.gdbm_errno)))
-}
 
 //
 type Database struct {
@@ -33,6 +33,10 @@ type DatabaseCfg struct {
     Mode string
     BlockSize int
     Permissions int
+}
+
+func lastError() error {
+    return errors.New(C.GoString(C.gdbm_strerror(C.gdbm_errno)))
 }
 
 // Simple function to open a database file with default parameters (block size
@@ -65,3 +69,23 @@ func (db * Database) Close() {
     C.gdbm_close(db.dbf)
 }
 
+//
+func (db * Database) insert(key string, value string, flag C.int) (err error) {
+    k := C.mk_datum(C.CString(key), C.int(3))
+    v := C.mk_datum(C.CString(value), C.int(3))
+    retv := C.gdbm_store(db.dbf, k, v, flag)
+    if retv != 0 {
+        err = lastError()
+    }
+    return err
+}
+
+//
+func (db * Database) Insert(key string, value string) (err error) {
+    return db.insert(key, value, C.GDBM_INSERT)
+}
+
+//
+func (db * Database) Replace(key string, value string) (err error) {
+    return db.insert(key, value, C.GDBM_REPLACE)
+}
