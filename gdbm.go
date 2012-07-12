@@ -111,6 +111,10 @@ func (db * Database) Fetch() {}
 
 func (db * Database) Delete() {}
 
-func (db * Database) Reorganize() {}
+func (db * Database) Reorganize() {
+    C.gdbm_reorganize(db.dbf)
+}
 
-func (db * Database) Sync() {}
+func (db * Database) Sync() {
+    C.gdbm_sync(db.dbf)
+}
