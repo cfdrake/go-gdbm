@@ -119,7 +119,7 @@ func (db * Database) Delete(key string) (err error) {
     defer C.free(unsafe.Pointer(kcs))
 
     retv := C.gdbm_delete(db.dbf, k)
-    if retv != 0 && db.cfg.Mode == "r" {
+    if retv == -1 && db.cfg.Mode == "r" {
         err = lastError()
     }
     return err
