@@ -1,8 +1,3 @@
-//
-//
-//
-//
-
 package gdbm
 
 import (
@@ -32,7 +27,8 @@ func TestRecreate(t * testing.T) {
 
 // TODO: test other initializers
 
-//
+// Ensure that the database doesn't allow a Reader type to call an database-
+// modifying operation such as Insert().
 func TestWriteErrorWhenReader(t * testing.T) {
     // Ensure the db exists for this test
     db, err := Open("test.gdbm", "c")
@@ -51,7 +47,9 @@ func TestWriteErrorWhenReader(t * testing.T) {
     }
 }
 
-//
+// Tests to make sure that inserting a key, then replacing its old value with a
+// new one will not return an error (as would happen if you were to call
+// Insert() again rather than Replace()) and that the key is actually updated.
 func TestReplace(t * testing.T) {
     db, err := Open("test.gdbm", "c")
     defer db.Close()
@@ -68,7 +66,8 @@ func TestReplace(t * testing.T) {
     }
 }
 
-//
+// Ensures that if a key k is inserted into the database, calling Exists(k)
+// returns true - indicating that the insertion was successful.
 func TestExists(t * testing.T) {
     db, err := Open("test.gdbm", "c")
     defer db.Close()
@@ -84,7 +83,8 @@ func TestExists(t * testing.T) {
     }
 }
 
-//
+// Test to make sure that if a key is inserted then deleted, that it no longer
+// returns true for Exists(key).
 func TestDelete(t * testing.T) {
     db, err := Open("test.gdbm", "c")
     defer db.Close()
@@ -97,17 +97,17 @@ func TestDelete(t * testing.T) {
     }
 }
 
-//
+// Ensure the Reorganize() function doesn't halt execution.
 func TestReorganize(t * testing.T) {
     // No values to test, but testing as a sanity test - if something does go
     // wrong and the program crashes, this'll let us know Reorganize() is
-    // broken ;)
+    // broken. ;)
     db, _ := Open("test.gdbm", "c")
     defer db.Close()
     db.Reorganize()
 }
 
-//
+// Ensure the Sync() function doesn't halt execution.
 func TestSync(t * testing.T) {
     // Same as TestReorganize() w/r/t no return value, etc.
     db, _ := Open("test.gdbm", "c")

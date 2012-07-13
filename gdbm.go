@@ -1,8 +1,4 @@
-//
-//
-//
-//
-
+// Packge gdbm implements a wrapper around libgdbm for Go.
 package gdbm
 
 // #cgo CFLAGS: -std=gnu99
