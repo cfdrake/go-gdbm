@@ -26,7 +26,7 @@ import (
 //
 type Database struct {
     dbf C.GDBM_FILE
-    cfg DatabaseCfg
+    mode int
 }
 
 //
@@ -47,19 +47,20 @@ func Open(filename string, mode string) (db * Database, err error) {
 }
 
 func OpenWithCfg(filename string, cfg DatabaseCfg) (db * Database, err error) {
-    var m int
+    db = new(Database)
+    err = nil
+
     switch cfg.Mode {
-    case "r": m = C.GDBM_READER
-    case "w": m = C.GDBM_WRITER
-    case "c": m = C.GDBM_WRCREAT
-    case "n": m = C.GDBM_NEWDB
+    case "r": db.mode = C.GDBM_READER
+    case "w": db.mode = C.GDBM_WRITER
+    case "c": db.mode = C.GDBM_WRCREAT
+    case "n": db.mode = C.GDBM_NEWDB
     }
 
     cs := C.CString(filename)
     defer C.free(unsafe.Pointer(cs))
 
-    db.cfg = cfg
-    db.dbf = C.gdbm_open(cs, C.int(cfg.BlockSize), C.int(m), C.int(cfg.Permissions), nil)
+    db.dbf = C.gdbm_open(cs, C.int(cfg.BlockSize), C.int(db.mode), C.int(cfg.Permissions), nil)
     if db.dbf == nil {
         err = lastError()
     }
@@ -132,7 +133,7 @@ func (db * Database) Delete(key string) (err error) {
     defer C.free(unsafe.Pointer(kcs))
 
     retv := C.gdbm_delete(db.dbf, k)
-    if retv == -1 && db.cfg.Mode == "r" {
+    if retv == -1 && db.mode == C.GDBM_READER {
         err = lastError()
     }
     return err
