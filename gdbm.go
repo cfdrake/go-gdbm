@@ -167,12 +167,12 @@ func (db *Database) ToMap() (db_map map[string]string, err error) {
 
 	curr_k, err = db.FirstKey()
 	if err != nil {
-		return
+		return db, nil
 	}
 
 	curr_v, err = db.Fetch(curr_k)
 	if err != nil {
-		return
+		return db, nill
 	}
 
 	db_map[curr_k] = curr_v
