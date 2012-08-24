@@ -155,6 +155,45 @@ func (db *Database) NextKey(key string) (value string, err error) {
 	return value, nil
 }
 
+// return a map of [key]value, otherwise `err`
+func (db *Database) ToMap() (db_map map[string]string, err error) {
+	var (
+		curr_k string
+		curr_v string
+		next_k string
+		next_v string
+	)
+	db_map = make(map[string]string)
+
+	curr_k, err = db.FirstKey()
+	if err != nil {
+		return
+	}
+
+	curr_v, err = db.Fetch(curr_k)
+	if err != nil {
+		return
+	}
+
+	db_map[curr_k] = curr_v
+
+	for {
+		next_k, err = db.NextKey(curr_k)
+		if err != nil {
+			break
+		}
+
+		next_v, err = db.Fetch(next_k)
+		if err != nil {
+			break
+		}
+		db_map[next_k] = next_v
+
+		curr_k = next_k
+	}
+	return
+}
+
 // Fetches the value of the given key. If the key is not in the database, an
 // error will be returned in err. Otherwise, value will be the value string
 // that is keyed by `key`.
