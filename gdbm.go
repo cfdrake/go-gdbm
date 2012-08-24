@@ -191,7 +191,7 @@ func (db *Database) ToMap() (db_map map[string]string, err error) {
 
 		curr_k = next_k
 	}
-	return
+	return db_map, nil
 }
 
 // Fetches the value of the given key. If the key is not in the database, an
