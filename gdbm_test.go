@@ -5,6 +5,14 @@ import (
 	"testing"
 )
 
+// Test that GDBM version is returned
+func TestVersion(t *testing.T) {
+	vers := Version()
+	if len(vers) == 0 {
+		t.Error("version string is not present")
+	}
+}
+
 // Tests that the database is recreated everytime when opened in "c" mode.
 // Ensures that the file exists and that there are no key-value pairs.
 func TestRecreate(t *testing.T) {
