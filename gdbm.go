@@ -125,6 +125,36 @@ func (db *Database) Exists(key string) bool {
 	return false
 }
 
+// Returns the firstkey in this gdbm.Database. If there is not a key, an
+// error will be returned in err.
+func (db *Database) FirstKey() (value string, err error) {
+	vdatum := C.gdbm_firstkey(db.dbf)
+	if vdatum.dptr == nil {
+		return "", lastError()
+	}
+
+	value = C.GoString(vdatum.dptr)
+	defer C.free(unsafe.Pointer(vdatum.dptr))
+	return value, nil
+}
+
+// Returns the nextkey after `key`. If there is not a next key, an
+// error will be returned in err.
+func (db *Database) NextKey(key string) (value string, err error) {
+	kcs := C.CString(key)
+	k := C.mk_datum(kcs)
+	defer C.free(unsafe.Pointer(kcs))
+
+	vdatum := C.gdbm_nextkey(db.dbf, k)
+	if vdatum.dptr == nil {
+		return "", lastError()
+	}
+
+	value = C.GoString(vdatum.dptr)
+	defer C.free(unsafe.Pointer(vdatum.dptr))
+	return value, nil
+}
+
 // Fetches the value of the given key. If the key is not in the database, an
 // error will be returned in err. Otherwise, value will be the value string
 // that is keyed by `key`.
