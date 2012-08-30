@@ -42,6 +42,11 @@ func lastError() error {
 	return errors.New(C.GoString(C.gdbm_strerror(C.gdbm_errno)))
 }
 
+// return the gdbm release build string
+func Version() (version string) {
+	return C.GoString(C.gdbm_version)
+}
+
 // Simple function to open a database file with default parameters (block size
 // is default for the filesystem and file permissions are set to 0666).
 func Open(filename string, mode string) (db *Database, err error) {
