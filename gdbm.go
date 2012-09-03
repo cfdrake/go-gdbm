@@ -130,8 +130,9 @@ func (db *Database) Exists(key string) bool {
 	return false
 }
 
-// Returns the firstkey in this gdbm.Database. If there is not a key, an
-// error will be returned in err.
+// Returns the firstkey in this gdbm.Database.
+// The traversal is ordered by gdbm‘s internal hash values, and won’t be sorted by the key values
+// If there is not a key, an error will be returned in err.
 func (db *Database) FirstKey() (value string, err error) {
 	vdatum := C.gdbm_firstkey(db.dbf)
 	if vdatum.dptr == nil {
