@@ -13,11 +13,50 @@ func TestVersion(t *testing.T) {
 	}
 }
 
+// Create a database, insert two rows, and check that FirstKey, and NextKey return those keys
+func TestKeys(t *testing.T) {
+  var db_filename string = "test.gdbm" // pending the test_cleanup merge
+
+	os.Remove(db_filename) // pending the test_cleanup merge
+	db, err := Open(db_filename, "c")
+	if err != nil {
+		t.Error("Couldn't create new database")
+	}
+	defer db.Close()
+	defer os.Remove(db_filename)
+
+	err = db.Insert("foo", "bar")
+	if err != nil {
+		t.Error("Database let readonly client write")
+	}
+	err = db.Insert("baz", "bax")
+	if err != nil {
+		t.Error("Database let readonly client write")
+	}
+
+  k,err := db.FirstKey()
+  if err != nil {
+    t.Error(err)
+  }
+  if k != "foo" && k != "baz" {
+    t.Error("FirstKey() expected 'foo' or 'baz'")
+  }
+
+  n,err := db.NextKey(k)
+  if err != nil {
+    t.Error(err)
+  }
+  if n != "foo" && n != "baz" {
+    t.Error("NextKey() expected 'foo' or 'baz'")
+  }
+
+}
+
 // Tests that the database is recreated everytime when opened in "c" mode.
 // Ensures that the file exists and that there are no key-value pairs.
 func TestRecreate(t *testing.T) {
 	db, err := Open("test.gdbm", "c")
-	defer db.Close()
+	db.Close() // pending the test_cleanup merge
 
 	if err != nil {
 		t.Error("Couldn't create new database")
