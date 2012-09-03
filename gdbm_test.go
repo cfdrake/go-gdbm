@@ -19,7 +19,7 @@ func TestVersion(t *testing.T) {
 // Ensures that the file exists and that there are no key-value pairs.
 func TestRecreate(t *testing.T) {
 	db, err := Open(db_filename, "c")
-	defer db.Close()
+  db.Close()
 
 	if err != nil {
 		t.Error("Couldn't create new database")
@@ -28,6 +28,9 @@ func TestRecreate(t *testing.T) {
 	f, err := Open(db_filename, "r")
 	defer f.Close()
 	defer os.Remove(db_filename)
+	if err != nil {
+		t.Error("Couldn't open new database")
+	}
 
 	if os.IsExist(err) {
 		t.Error("Database wasn't actually created")
