@@ -13,9 +13,19 @@ func TestVersion(t *testing.T) {
 	}
 }
 
+/* returns true if str is a word in list */
+func ListContains(list []string, str string) bool {
+	for i := range list {
+		if list[i] == str {
+			return true
+		}
+	}
+	return false
+}
+
 // Create a database, insert two rows, and check that FirstKey, and NextKey return those keys
 func TestKeys(t *testing.T) {
-  var db_filename string = "test.gdbm" // pending the test_cleanup merge
+	var db_filename string = "test.gdbm" // pending the test_cleanup merge
 
 	os.Remove(db_filename) // pending the test_cleanup merge
 	db, err := Open(db_filename, "c")
@@ -33,22 +43,34 @@ func TestKeys(t *testing.T) {
 	if err != nil {
 		t.Error("Database let readonly client write")
 	}
+	err = db.Insert("biff", "bixx")
+	if err != nil {
+		t.Error("Database let readonly client write")
+	}
 
-  k,err := db.FirstKey()
-  if err != nil {
-    t.Error(err)
-  }
-  if k != "foo" && k != "baz" {
-    t.Error("FirstKey() expected 'foo' or 'baz'")
-  }
+	expected_keys := []string{
+		"foo",
+		"baz",
+		"biff",
+	}
 
-  n,err := db.NextKey(k)
-  if err != nil {
-    t.Error(err)
-  }
-  if n != "foo" && n != "baz" {
-    t.Error("NextKey() expected 'foo' or 'baz'")
-  }
+	k, err := db.FirstKey()
+	if err != nil {
+		t.Error(err)
+	}
+	if !ListContains(expected_keys, k) {
+    t.Errorf("FirstKey() expected: %s", expected_keys)
+	}
+
+	for i := 1; i < len(expected_keys); i++ {
+		n, err := db.NextKey(k)
+		if err != nil {
+			t.Error(err)
+		}
+		if !ListContains(expected_keys, n) {
+      t.Errorf("NextKey() expected: %s", expected_keys)
+		}
+	}
 
 }
 
