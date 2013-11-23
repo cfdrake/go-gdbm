@@ -147,7 +147,7 @@ func (db *Database) FirstKey() (value string, err error) {
 		return "", lastError()
 	}
 
-	value = C.GoString(vdatum.dptr)
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
 	defer C.free(unsafe.Pointer(vdatum.dptr))
 	return value, nil
 }
@@ -164,7 +164,7 @@ func (db *Database) NextKey(key string) (value string, err error) {
 		return "", lastError()
 	}
 
-	value = C.GoString(vdatum.dptr)
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
 	defer C.free(unsafe.Pointer(vdatum.dptr))
 	return value, nil
 }
@@ -176,13 +176,16 @@ func (db *Database) Fetch(key string) (value string, err error) {
 	kcs := C.CString(key)
 	k := C.mk_datum(kcs)
 	defer C.free(unsafe.Pointer(kcs))
+	return db.fetch(k)
+}
 
-	vdatum := C.gdbm_fetch(db.dbf, k)
+func (db *Database) fetch(d C.datum) (value string, err error) {
+	vdatum := C.gdbm_fetch(db.dbf, d)
 	if vdatum.dptr == nil {
 		return "", lastError()
 	}
 
-	value = C.GoString(vdatum.dptr)
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
 	defer C.free(unsafe.Pointer(vdatum.dptr))
 	return value, nil
 }
