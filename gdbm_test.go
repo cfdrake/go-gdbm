@@ -59,7 +59,7 @@ func TestKeys(t *testing.T) {
 		t.Error(err)
 	}
 	if !ListContains(expected_keys, k) {
-    t.Errorf("FirstKey() expected: %s", expected_keys)
+		t.Errorf("FirstKey() expected: %s", expected_keys)
 	}
 
 	for i := 1; i < len(expected_keys); i++ {
@@ -68,7 +68,7 @@ func TestKeys(t *testing.T) {
 			t.Error(err)
 		}
 		if !ListContains(expected_keys, n) {
-      t.Errorf("NextKey() expected: %s", expected_keys)
+			t.Errorf("NextKey() expected: %s", expected_keys)
 		}
 	}
 
