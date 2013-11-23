@@ -47,8 +47,16 @@ func Version() (version string) {
 	return C.GoString(C.gdbm_version)
 }
 
-// Simple function to open a database file with default parameters (block size
-// is default for the filesystem and file permissions are set to 0666).
+/*
+Simple function to open a database file with default parameters (block size
+is default for the filesystem and file permissions are set to 0666).
+
+mode is one of:
+  "r" - reader
+  "w" - writer
+  "c" - rw / create
+  "n" - new db
+*/
 func Open(filename string, mode string) (db *Database, err error) {
 	return OpenWithCfg(filename, DatabaseCfg{mode, 0, 0666})
 }
