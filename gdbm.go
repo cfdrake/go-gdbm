@@ -38,8 +38,17 @@ type DatabaseCfg struct {
 	Permissions int
 }
 
+var (
+  // The error received when the end of the database is reached
+	NoError = errors.New("No error")
+)
+
 func lastError() error {
-	return errors.New(C.GoString(C.gdbm_strerror(C.gdbm_errno)))
+	str := C.GoString(C.gdbm_strerror(C.gdbm_errno))
+	if str == "No error" {
+		return NoError
+	}
+	return errors.New(str)
 }
 
 // return the gdbm release build string
@@ -152,8 +161,35 @@ func (db *Database) FirstKey() (value string, err error) {
 	return value, nil
 }
 
-// Returns the nextkey after `key`. If there is not a next key, an
-// error will be returned in err.
+/*
+Returns the nextkey after `key`. If there is not a next key, an
+NoError error will be returned.
+
+An Iteration might look like:
+
+  k, err := db.FirstKey()
+  if err != nil {
+    fmt.Fprintln(os.Stderr, err)
+    os.Exit(1)
+  }
+  for {
+    v, err := db.Fetch(k)
+    if err != nil {
+      fmt.Fprintln(os.Stderr, err)
+      os.Exit(1)
+    }
+    fmt.Println(v)
+
+    k, err = db.NextKey(k)
+    if err == gdbm.NoError {
+      break
+    } else if err != nil {
+      fmt.Fprintln(os.Stderr, err)
+      os.Exit(1)
+    }
+  }
+
+*/
 func (db *Database) NextKey(key string) (value string, err error) {
 	kcs := C.CString(key)
 	k := C.mk_datum(kcs)
@@ -176,11 +212,8 @@ func (db *Database) Fetch(key string) (value string, err error) {
 	kcs := C.CString(key)
 	k := C.mk_datum(kcs)
 	defer C.free(unsafe.Pointer(kcs))
-	return db.fetch(k)
-}
 
-func (db *Database) fetch(d C.datum) (value string, err error) {
-	vdatum := C.gdbm_fetch(db.dbf, d)
+	vdatum := C.gdbm_fetch(db.dbf, k)
 	if vdatum.dptr == nil {
 		return "", lastError()
 	}
