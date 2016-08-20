@@ -17,11 +17,12 @@ func TestVersion(t *testing.T) {
 // Ensures that the file exists and that there are no key-value pairs.
 func TestRecreate(t *testing.T) {
 	db, err := Open("test.gdbm", "c")
-	defer db.Close()
 
 	if err != nil {
 		t.Error("Couldn't create new database")
 	}
+
+	db.Close()
 
 	f, err := Open("test.gdbm", "r")
 	defer f.Close()
