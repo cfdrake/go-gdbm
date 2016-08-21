@@ -10,6 +10,11 @@ Installation
 
     $ go get github.com/cfdrake/go-gdbm
 
+Documentation
+-------------
+
+The documentation for this package is hosted at [godoc.org](https://godoc.org/github.com/cfdrake/go-gdbm).
+
 Usage
 -----
 
