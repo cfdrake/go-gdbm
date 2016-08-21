@@ -38,8 +38,17 @@ type DatabaseCfg struct {
 	Permissions int
 }
 
+var (
+  // The error received when the end of the database is reached
+	NoError = errors.New("No error")
+)
+
 func lastError() error {
-	return errors.New(C.GoString(C.gdbm_strerror(C.gdbm_errno)))
+	str := C.GoString(C.gdbm_strerror(C.gdbm_errno))
+	if str == "No error" {
+		return NoError
+	}
+	return errors.New(str)
 }
 
 // return the gdbm release build string
@@ -47,8 +56,16 @@ func Version() (version string) {
 	return C.GoString(C.gdbm_version)
 }
 
-// Simple function to open a database file with default parameters (block size
-// is default for the filesystem and file permissions are set to 0666).
+/*
+Simple function to open a database file with default parameters (block size
+is default for the filesystem and file permissions are set to 0666).
+
+mode is one of:
+  "r" - reader
+  "w" - writer
+  "c" - rw / create
+  "n" - new db
+*/
 func Open(filename string, mode string) (db *Database, err error) {
 	return OpenWithCfg(filename, DatabaseCfg{mode, 0, 0666})
 }
@@ -130,6 +147,64 @@ func (db *Database) Exists(key string) bool {
 	return false
 }
 
+// Returns the firstkey in this gdbm.Database.
+// The traversal is ordered by gdbm‘s internal hash values, and won’t be sorted by the key values
+// If there is not a key, an error will be returned in err.
+func (db *Database) FirstKey() (value string, err error) {
+	vdatum := C.gdbm_firstkey(db.dbf)
+	if vdatum.dptr == nil {
+		return "", lastError()
+	}
+
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
+	defer C.free(unsafe.Pointer(vdatum.dptr))
+	return value, nil
+}
+
+/*
+Returns the nextkey after `key`. If there is not a next key, an
+NoError error will be returned.
+
+An Iteration might look like:
+
+  k, err := db.FirstKey()
+  if err != nil {
+    fmt.Fprintln(os.Stderr, err)
+    os.Exit(1)
+  }
+  for {
+    v, err := db.Fetch(k)
+    if err != nil {
+      fmt.Fprintln(os.Stderr, err)
+      os.Exit(1)
+    }
+    fmt.Println(v)
+
+    k, err = db.NextKey(k)
+    if err == gdbm.NoError {
+      break
+    } else if err != nil {
+      fmt.Fprintln(os.Stderr, err)
+      os.Exit(1)
+    }
+  }
+
+*/
+func (db *Database) NextKey(key string) (value string, err error) {
+	kcs := C.CString(key)
+	k := C.mk_datum(kcs)
+	defer C.free(unsafe.Pointer(kcs))
+
+	vdatum := C.gdbm_nextkey(db.dbf, k)
+	if vdatum.dptr == nil {
+		return "", lastError()
+	}
+
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
+	defer C.free(unsafe.Pointer(vdatum.dptr))
+	return value, nil
+}
+
 // Fetches the value of the given key. If the key is not in the database, an
 // error will be returned in err. Otherwise, value will be the value string
 // that is keyed by `key`.
@@ -143,7 +218,7 @@ func (db *Database) Fetch(key string) (value string, err error) {
 		return "", lastError()
 	}
 
-	value = C.GoString(vdatum.dptr)
+	value = C.GoStringN(vdatum.dptr, vdatum.dsize)
 	defer C.free(unsafe.Pointer(vdatum.dptr))
 	return value, nil
 }
