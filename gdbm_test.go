@@ -85,7 +85,7 @@ func TestRecreate(t *testing.T) {
 		t.Error("Couldn't create new database")
 	}
 
-  db.Close()
+	db.Close()
 
 	f, err := Open(db_filename, "r")
 

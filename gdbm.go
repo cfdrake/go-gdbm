@@ -39,7 +39,7 @@ type DatabaseCfg struct {
 }
 
 var (
-  // The error received when the end of the database is reached
+	// The error received when the end of the database is reached
 	NoError = errors.New("No error")
 )
 
