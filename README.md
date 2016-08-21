@@ -25,8 +25,8 @@ See `gdbm_test.go` for some code examples. The API is relatively reminiscent of 
 Contributors
 ------------
 
-[Colin Drake](https://github.com/cfdrake)
-[Vincent Batts](https://github.com/vbatts)
+- [Colin Drake](https://github.com/cfdrake)
+- [Vincent Batts](https://github.com/vbatts)
 
 License
 -------
