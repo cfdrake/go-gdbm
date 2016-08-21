@@ -99,7 +99,12 @@ func TestRecreate(t *testing.T) {
 		t.Error("Database wasn't actually created")
 	}
 
-	// TODO: test for no keys
+	// Validate that there are no keys in the DB
+	// If err was not found, a key was returned
+	_, err = f.FirstKey()
+	if err == nil {
+		t.Error("Database was not emptied of keys")
+	}
 }
 
 // TODO: test other initializers
