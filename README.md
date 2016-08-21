@@ -1,7 +1,7 @@
 go-gdbm
 =======
 
-Go bindings for libgdbm, the GNU DataBase Manager library. In essence, this
+Go bindings for [libgdbm](http://www.gnu.org.ua/software/gdbm/), the GNU DataBase Manager library. In essence, this
 package provides an API for managing simple string-based key-value stores with
 a gdbm backend.
 
