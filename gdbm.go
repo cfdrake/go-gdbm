@@ -7,7 +7,7 @@ package gdbm
 // #include <stdlib.h>
 // #include <gdbm.h>
 // #include <string.h>
-// inline datum mk_datum(char * s) {
+// static inline datum mk_datum(char * s) {
 //     datum d;
 //     d.dptr = s;
 //     d.dsize = strlen(s);
